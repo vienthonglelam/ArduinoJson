@@ -10,6 +10,7 @@ add_executable(JsonDeserializerTests
 	incomplete_input.cpp
 	input_types.cpp
 	invalid_input.cpp
+	JsonDeserializer.cpp
 	misc.cpp
 	nestingLimit.cpp
 	number.cpp
