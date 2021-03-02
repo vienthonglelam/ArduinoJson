@@ -11,33 +11,45 @@
 namespace ARDUINOJSON_NAMESPACE {
 
 template <typename T>
-inline typename enable_if<is_same<ArrayConstRef, T>::value, T>::type variantAs(
-    const VariantData* _data) {
-  return ArrayConstRef(variantAsArray(_data));
-}
+struct VariantAs<T,
+                 typename enable_if<is_same<ArrayConstRef, T>::value>::type> {
+  typedef T type;
+  static T get(const VariantData* _data) {
+    return ArrayConstRef(variantAsArray(_data));
+  }
+};
 
 template <typename T>
-inline typename enable_if<is_same<ObjectConstRef, T>::value, T>::type variantAs(
-    const VariantData* _data) {
-  return ObjectConstRef(variantAsObject(_data));
-}
+struct VariantAs<T,
+                 typename enable_if<is_same<ObjectConstRef, T>::value>::type> {
+  typedef T type;
+  static T get(const VariantData* _data) {
+    return ObjectConstRef(variantAsObject(_data));
+  }
+};
 
 template <typename T>
-inline typename enable_if<is_same<VariantConstRef, T>::value, T>::type
-variantAs(const VariantData* _data) {
-  return VariantConstRef(_data);
-}
+struct VariantAs<T,
+                 typename enable_if<is_same<VariantConstRef, T>::value>::type> {
+  typedef T type;
+  static T get(const VariantData* _data) {
+    return VariantConstRef(_data);
+  }
+};
 
 template <typename T>
-inline typename enable_if<IsWriteableString<T>::value, T>::type variantAs(
-    const VariantData* _data) {
-  const char* cstr = _data != 0 ? _data->asString() : 0;
-  if (cstr)
-    return T(cstr);
-  T s;
-  serializeJson(VariantConstRef(_data), s);
-  return s;
-}
+struct VariantAs<T, typename enable_if<IsWriteableString<T>::value>::type> {
+  typedef T type;
+
+  static T get(const VariantData* _data) {
+    const char* cstr = _data != 0 ? _data->asString() : 0;
+    if (cstr)
+      return T(cstr);
+    T s;
+    serializeJson(VariantConstRef(_data), s);
+    return s;
+  }
+};
 
 template <>
 inline ArrayRef variantAs<ArrayRef>(VariantData* data, MemoryPool* pool) {
