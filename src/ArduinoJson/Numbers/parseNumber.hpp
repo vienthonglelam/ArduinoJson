@@ -10,7 +10,7 @@
 #include <ArduinoJson/Polyfills/ctype.hpp>
 #include <ArduinoJson/Polyfills/math.hpp>
 #include <ArduinoJson/Polyfills/type_traits.hpp>
-#include <ArduinoJson/Variant/VariantAs.hpp>
+#include <ArduinoJson/Variant/Converter.hpp>
 #include <ArduinoJson/Variant/VariantData.hpp>
 
 namespace ARDUINOJSON_NAMESPACE {

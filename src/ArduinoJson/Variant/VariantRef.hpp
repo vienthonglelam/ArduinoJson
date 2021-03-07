@@ -11,7 +11,7 @@
 #include <ArduinoJson/Misc/Visitable.hpp>
 #include <ArduinoJson/Polyfills/type_traits.hpp>
 #include <ArduinoJson/Strings/StringAdapters.hpp>
-#include <ArduinoJson/Variant/VariantAs.hpp>
+#include <ArduinoJson/Variant/Converter.hpp>
 #include <ArduinoJson/Variant/VariantFunctions.hpp>
 #include <ArduinoJson/Variant/VariantIs.hpp>
 #include <ArduinoJson/Variant/VariantOperators.hpp>

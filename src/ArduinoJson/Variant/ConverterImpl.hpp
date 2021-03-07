@@ -11,8 +11,8 @@
 namespace ARDUINOJSON_NAMESPACE {
 
 template <typename T>
-struct VariantAs<T,
-                 typename enable_if<is_same<ArrayConstRef, T>::value>::type> {
+struct JsonConverter<
+    T, typename enable_if<is_same<ArrayConstRef, T>::value>::type> {
   typedef T type;
   static T get(const VariantData* _data) {
     return ArrayConstRef(variantAsArray(_data));
@@ -20,8 +20,8 @@ struct VariantAs<T,
 };
 
 template <typename T>
-struct VariantAs<T,
-                 typename enable_if<is_same<ObjectConstRef, T>::value>::type> {
+struct JsonConverter<
+    T, typename enable_if<is_same<ObjectConstRef, T>::value>::type> {
   typedef T type;
   static T get(const VariantData* _data) {
     return ObjectConstRef(variantAsObject(_data));
@@ -29,8 +29,8 @@ struct VariantAs<T,
 };
 
 template <typename T>
-struct VariantAs<T,
-                 typename enable_if<is_same<VariantConstRef, T>::value>::type> {
+struct JsonConverter<
+    T, typename enable_if<is_same<VariantConstRef, T>::value>::type> {
   typedef T type;
   static T get(const VariantData* _data) {
     return VariantConstRef(_data);
@@ -38,7 +38,7 @@ struct VariantAs<T,
 };
 
 template <typename T>
-struct VariantAs<T, typename enable_if<IsWriteableString<T>::value>::type> {
+struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type> {
   typedef T type;
 
   static T get(const VariantData* _data) {

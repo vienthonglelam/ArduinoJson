@@ -17,12 +17,12 @@ class VariantRef;
 class VariantConstRef;
 
 template <typename T, typename Enable = void>
-struct VariantAs {
+struct JsonConverter {
   typedef T type;
 };
 
 template <typename T>
-struct VariantAs<
+struct JsonConverter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
                           !is_same<char, T>::value>::type> {
   typedef T type;
@@ -34,7 +34,7 @@ struct VariantAs<
 };
 
 template <typename T>
-struct VariantAs<T, typename enable_if<is_enum<T>::value>::type> {
+struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
   typedef T type;
 
   static T get(const VariantData* data) {
@@ -43,7 +43,7 @@ struct VariantAs<T, typename enable_if<is_enum<T>::value>::type> {
 };
 
 template <typename T>
-struct VariantAs<T, typename enable_if<is_same<T, bool>::value>::type> {
+struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
   typedef T type;
 
   static T get(const VariantData* data) {
@@ -52,7 +52,7 @@ struct VariantAs<T, typename enable_if<is_same<T, bool>::value>::type> {
 };
 
 template <typename T>
-struct VariantAs<T, typename enable_if<is_floating_point<T>::value>::type> {
+struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
   typedef T type;
   static T get(const VariantData* data) {
     return data->asFloat<T>();
@@ -60,8 +60,8 @@ struct VariantAs<T, typename enable_if<is_floating_point<T>::value>::type> {
 };
 
 template <typename T>
-struct VariantAs<T, typename enable_if<is_same<T, const char*>::value ||
-                                       is_same<T, char*>::value>::type> {
+struct JsonConverter<T, typename enable_if<is_same<T, const char*>::value ||
+                                           is_same<T, char*>::value>::type> {
   typedef const char* type;
   static type get(const VariantData* data) {
     return data->asString();
@@ -69,11 +69,11 @@ struct VariantAs<T, typename enable_if<is_same<T, const char*>::value ||
 };
 
 template <>
-struct VariantAs<char*> : VariantAs<const char*> {};
+struct JsonConverter<char*> : JsonConverter<const char*> {};
 
 template <typename T>
 struct VariantConstAs {
-  typedef typename VariantAs<T>::type type;
+  typedef typename JsonConverter<T>::type type;
 };
 
 template <>
@@ -94,23 +94,23 @@ struct VariantConstAs<ArrayRef> {
 // ---
 
 template <typename T>
-struct VariantAs<T, typename enable_if<is_same<ArrayConstRef, T>::value>::type>;
+struct JsonConverter<
+    T, typename enable_if<is_same<ArrayConstRef, T>::value>::type>;
 
 template <typename T>
-struct VariantAs<T,
-                 typename enable_if<is_same<ObjectConstRef, T>::value>::type>;
+struct JsonConverter<
+    T, typename enable_if<is_same<ObjectConstRef, T>::value>::type>;
 
 template <typename T>
-struct VariantAs<T,
-                 typename enable_if<is_same<VariantConstRef, T>::value>::type>;
+struct JsonConverter<
+    T, typename enable_if<is_same<VariantConstRef, T>::value>::type>;
 
 template <typename T>
-struct VariantAs<T, typename enable_if<IsWriteableString<T>::value>::type>;
+struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type>;
 
 template <typename T>
-inline typename enable_if<is_same<T, const char*>::value, T>::type variantAs(
-    const VariantData* data) {
-  return data != 0 ? data->asString() : 0;
+inline typename JsonConverter<T>::type variantAs(const VariantData* data) {
+  return data != 0 ? JsonConverter<T>::get(data) : T();
 }
 
 template <typename T>
