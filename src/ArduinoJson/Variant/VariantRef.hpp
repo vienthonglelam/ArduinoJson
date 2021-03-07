@@ -28,6 +28,9 @@ class ObjectRef;
 // Contains the methods shared by VariantRef and VariantConstRef
 template <typename TData>
 class VariantRefBase : public VariantTag {
+  template <typename T, typename Enable>
+  friend class JsonConverter;
+
  public:
   template <typename T>
   FORCE_INLINE bool is() const {
