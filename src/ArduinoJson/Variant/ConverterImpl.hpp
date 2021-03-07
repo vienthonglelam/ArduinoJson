@@ -10,29 +10,26 @@
 
 namespace ARDUINOJSON_NAMESPACE {
 
-template <typename T>
-struct JsonConverter<
-    T, typename enable_if<is_same<ArrayConstRef, T>::value>::type> {
-  typedef T type;
-  static T get(const VariantData* _data) {
+template <>
+struct JsonConverter<ArrayConstRef, void> {
+  typedef ArrayConstRef type;
+  static ArrayConstRef get(const VariantData* _data) {
     return ArrayConstRef(variantAsArray(_data));
   }
 };
 
-template <typename T>
-struct JsonConverter<
-    T, typename enable_if<is_same<ObjectConstRef, T>::value>::type> {
-  typedef T type;
-  static T get(const VariantData* _data) {
+template <>
+struct JsonConverter<ObjectConstRef, void> {
+  typedef ObjectConstRef type;
+  static ObjectConstRef get(const VariantData* _data) {
     return ObjectConstRef(variantAsObject(_data));
   }
 };
 
-template <typename T>
-struct JsonConverter<
-    T, typename enable_if<is_same<VariantConstRef, T>::value>::type> {
-  typedef T type;
-  static T get(const VariantData* _data) {
+template <>
+struct JsonConverter<VariantConstRef, void> {
+  typedef VariantConstRef type;
+  static VariantConstRef get(const VariantData* _data) {
     return VariantConstRef(_data);
   }
 };

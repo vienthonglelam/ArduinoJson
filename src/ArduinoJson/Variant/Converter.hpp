@@ -93,17 +93,14 @@ struct VariantConstAs<ArrayRef> {
 
 // ---
 
-template <typename T>
-struct JsonConverter<
-    T, typename enable_if<is_same<ArrayConstRef, T>::value>::type>;
+template <>
+struct JsonConverter<ArrayConstRef, void>;
 
-template <typename T>
-struct JsonConverter<
-    T, typename enable_if<is_same<ObjectConstRef, T>::value>::type>;
+template <>
+struct JsonConverter<ObjectConstRef, void>;
 
-template <typename T>
-struct JsonConverter<
-    T, typename enable_if<is_same<VariantConstRef, T>::value>::type>;
+template <>
+struct JsonConverter<VariantConstRef, void>;
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type>;
