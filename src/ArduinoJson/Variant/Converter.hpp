@@ -23,7 +23,7 @@ template <typename T>
 struct JsonConverter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
                           !is_same<char, T>::value>::type> {
-  static T get(const VariantData* data) {
+  static T fromJson(const VariantData* data) {
     ARDUINOJSON_ASSERT_INTEGER_TYPE_IS_SUPPORTED(T);
     return data->asIntegral<T>();
   }
@@ -31,28 +31,28 @@ struct JsonConverter<
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
-  static T get(const VariantData* data) {
+  static T fromJson(const VariantData* data) {
     return static_cast<T>(data->asIntegral<int>());
   }
 };
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
-  static T get(const VariantData* data) {
+  static T fromJson(const VariantData* data) {
     return data->asBoolean();
   }
 };
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
-  static T get(const VariantData* data) {
+  static T fromJson(const VariantData* data) {
     return data->asFloat<T>();
   }
 };
 
 template <>
 struct JsonConverter<const char*> {
-  static const char* get(const VariantData* data) {
+  static const char* fromJson(const VariantData* data) {
     return data->asString();
   }
 };
@@ -93,7 +93,7 @@ struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type>;
 
 template <typename T>
 inline T variantAs(const VariantData* data) {
-  return data != 0 ? JsonConverter<T>::get(data) : T();
+  return data != 0 ? JsonConverter<T>::fromJson(data) : T();
 }
 
 template <typename T>
