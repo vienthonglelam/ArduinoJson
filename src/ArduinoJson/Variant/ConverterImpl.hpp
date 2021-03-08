@@ -11,7 +11,7 @@
 namespace ARDUINOJSON_NAMESPACE {
 
 template <>
-struct JsonConverter<ArrayConstRef, void> {
+struct JsonConverter<ArrayConstRef> {
   typedef ArrayConstRef type;
   static ArrayConstRef get(const VariantData* _data) {
     return ArrayConstRef(variantAsArray(_data));
@@ -19,7 +19,7 @@ struct JsonConverter<ArrayConstRef, void> {
 };
 
 template <>
-struct JsonConverter<ObjectConstRef, void> {
+struct JsonConverter<ObjectConstRef> {
   typedef ObjectConstRef type;
   static ObjectConstRef get(const VariantData* _data) {
     return ObjectConstRef(variantAsObject(_data));
@@ -27,7 +27,7 @@ struct JsonConverter<ObjectConstRef, void> {
 };
 
 template <>
-struct JsonConverter<VariantConstRef, void> {
+struct JsonConverter<VariantConstRef> {
   typedef VariantConstRef type;
   static VariantConstRef get(const VariantData* _data) {
     return VariantConstRef(_data);

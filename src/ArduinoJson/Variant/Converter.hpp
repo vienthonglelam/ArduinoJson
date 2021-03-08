@@ -17,16 +17,12 @@ class VariantRef;
 class VariantConstRef;
 
 template <typename T, typename Enable = void>
-struct JsonConverter {
-  typedef T type;
-};
+struct JsonConverter;
 
 template <typename T>
 struct JsonConverter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
                           !is_same<char, T>::value>::type> {
-  typedef T type;
-
   static T get(const VariantData* data) {
     ARDUINOJSON_ASSERT_INTEGER_TYPE_IS_SUPPORTED(T);
     return data->asIntegral<T>();
@@ -35,8 +31,6 @@ struct JsonConverter<
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
-  typedef T type;
-
   static T get(const VariantData* data) {
     return static_cast<T>(data->asIntegral<int>());
   }
@@ -44,8 +38,6 @@ struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
-  typedef T type;
-
   static T get(const VariantData* data) {
     return data->asBoolean();
   }
@@ -53,23 +45,17 @@ struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
-  typedef T type;
   static T get(const VariantData* data) {
     return data->asFloat<T>();
   }
 };
 
-template <typename T>
-struct JsonConverter<T, typename enable_if<is_same<T, const char*>::value ||
-                                           is_same<T, char*>::value>::type> {
-  typedef const char* type;
-  static type get(const VariantData* data) {
+template <>
+struct JsonConverter<const char*> {
+  static const char* get(const VariantData* data) {
     return data->asString();
   }
 };
-
-template <>
-struct JsonConverter<char*> : JsonConverter<const char*> {};
 
 template <typename T>
 struct VariantConstAs {
@@ -94,19 +80,19 @@ struct VariantConstAs<ArrayRef> {
 // ---
 
 template <>
-struct JsonConverter<ArrayConstRef, void>;
+struct JsonConverter<ArrayConstRef>;
 
 template <>
-struct JsonConverter<ObjectConstRef, void>;
+struct JsonConverter<ObjectConstRef>;
 
 template <>
-struct JsonConverter<VariantConstRef, void>;
+struct JsonConverter<VariantConstRef>;
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type>;
 
 template <typename T>
-inline typename JsonConverter<T>::type variantAs(const VariantData* data) {
+inline T variantAs(const VariantData* data) {
   return data != 0 ? JsonConverter<T>::get(data) : T();
 }
 
