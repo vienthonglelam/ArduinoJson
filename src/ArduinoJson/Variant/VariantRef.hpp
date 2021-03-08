@@ -76,6 +76,9 @@ class VariantRef : public VariantRefBase<VariantData>,
   typedef VariantRefBase<VariantData> base_type;
   friend class VariantConstRef;
 
+  template <typename T, typename Enable>
+  friend class JsonConverter;
+
  public:
   // Intenal use only
   FORCE_INLINE VariantRef(MemoryPool *pool, VariantData *data)
