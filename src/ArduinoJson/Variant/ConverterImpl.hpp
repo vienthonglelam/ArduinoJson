@@ -117,4 +117,14 @@ struct JsonConverter<VariantRef> {
   }
 };
 
+template <typename T>
+inline T variantAs(VariantConstRef variant) {
+  return JsonConverter<T>::fromJson(variant);
+}
+
+template <typename T>
+T variantAs(VariantRef variant) {
+  return JsonConverter<T>::fromJson(variant);
+}
+
 }  // namespace ARDUINOJSON_NAMESPACE

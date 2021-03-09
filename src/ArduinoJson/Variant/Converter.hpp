@@ -21,26 +21,10 @@ struct JsonConverter;
 
 // ---
 
-template <>
-struct JsonConverter<ArrayConstRef>;
-
-template <>
-struct JsonConverter<ObjectConstRef>;
-
-template <>
-struct JsonConverter<VariantConstRef>;
+template <typename T>
+inline T variantAs(VariantConstRef variant);
 
 template <typename T>
-struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type>;
-
-template <typename T>
-inline T variantAs(const VariantData* data) {
-  return JsonConverter<T>::fromJson(VariantConstRef(data));
-}
-
-template <typename T>
-T variantAs(VariantData* data, MemoryPool* pool) {
-  return JsonConverter<T>::fromJson(VariantRef(pool, data));
-}
+T variantAs(VariantRef variant);
 
 }  // namespace ARDUINOJSON_NAMESPACE

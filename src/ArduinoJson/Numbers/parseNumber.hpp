@@ -142,6 +142,6 @@ inline T parseNumber(const char* s) {
   VariantData value;
   value.init();  // VariantData is a POD, so it has no constructor
   parseNumber(s, value);
-  return variantAs<T>(&value);
+  return variantAs<T>(VariantConstRef(&value));
 }
 }  // namespace ARDUINOJSON_NAMESPACE

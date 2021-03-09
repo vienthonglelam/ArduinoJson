@@ -199,12 +199,12 @@ class VariantRef : public VariantRefBase<VariantData>,
      **    int8_t age = doc["age"];                                    **
      **    auto city = doc["city"].as<const char*>()                   **
      ********************************************************************/
-    return variantAs<T>(_data, _pool);
+    return variantAs<T>(*this);
   }
 
   template <typename T>
   FORCE_INLINE operator T() const {
-    return variantAs<T>(_data, _pool);
+    return variantAs<T>(*this);
   }
 
   template <typename TVisitor>
@@ -300,12 +300,12 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
 
   template <typename T>
   FORCE_INLINE T as() const {
-    return variantAs<T>(_data);
+    return variantAs<T>(*this);
   }
 
   template <typename T>
   FORCE_INLINE operator T() const {
-    return variantAs<T>(_data);
+    return variantAs<T>(*this);
   }
 
   FORCE_INLINE VariantConstRef getElement(size_t) const;
