@@ -13,7 +13,6 @@
 #include <ArduinoJson/Strings/StringAdapters.hpp>
 #include <ArduinoJson/Variant/Converter.hpp>
 #include <ArduinoJson/Variant/VariantFunctions.hpp>
-#include <ArduinoJson/Variant/VariantIs.hpp>
 #include <ArduinoJson/Variant/VariantOperators.hpp>
 #include <ArduinoJson/Variant/VariantRef.hpp>
 #include <ArduinoJson/Variant/VariantShortcuts.hpp>

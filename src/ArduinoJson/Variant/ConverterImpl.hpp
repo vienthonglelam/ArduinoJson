@@ -28,6 +28,10 @@ struct JsonConverter<
     const VariantData* data = variant._data;
     return data ? data->asIntegral<T>() : T();
   }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isInteger<T>();
+  }
 };
 
 template <typename T>
@@ -35,6 +39,10 @@ struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
   static T fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     return data ? static_cast<T>(data->asIntegral<int>()) : T();
+  }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isInteger<int>();
   }
 };
 
@@ -44,6 +52,10 @@ struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
     const VariantData* data = variant._data;
     return data ? data->asBoolean() : false;
   }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isBoolean();
+  }
 };
 
 template <typename T>
@@ -51,6 +63,10 @@ struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
   static T fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     return data ? data->asFloat<T>() : false;
+  }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isFloat();
   }
 };
 
@@ -60,12 +76,14 @@ struct JsonConverter<const char*> {
     const VariantData* data = variant._data;
     return data ? data->asString() : 0;
   }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isString();
+  }
 };
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type> {
-  typedef T type;
-
   static T fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     const char* cstr = data != 0 ? data->asString() : 0;
@@ -75,29 +93,42 @@ struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type> {
     serializeJson(variant, s);
     return s;
   }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isString();
+  }
 };
 
 template <>
 struct JsonConverter<ArrayConstRef> {
-  typedef ArrayConstRef type;
   static ArrayConstRef fromJson(VariantConstRef variant) {
     return ArrayConstRef(variantAsArray(variant._data));
+  }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isArray();
   }
 };
 
 template <>
 struct JsonConverter<ObjectConstRef> {
-  typedef ObjectConstRef type;
   static ObjectConstRef fromJson(VariantConstRef variant) {
     return ObjectConstRef(variantAsObject(variant._data));
+  }
+
+  static bool checkJson(const VariantData* data) {
+    return data && data->isObject();
   }
 };
 
 template <>
 struct JsonConverter<VariantConstRef> {
-  typedef VariantConstRef type;
   static VariantConstRef fromJson(VariantConstRef variant) {
     return VariantConstRef(variant._data);
+  }
+
+  static bool checkJson(const VariantData* data) {
+    return data;
   }
 };
 
@@ -108,6 +139,14 @@ struct JsonConverter<ArrayRef> {
     MemoryPool* pool = variant._pool;
     return ArrayRef(pool, data != 0 ? data->asArray() : 0);
   }
+
+  static bool checkJson(const VariantData*) {
+    return false;
+  }
+
+  static bool checkJson(VariantData* data) {
+    return data && data->isArray();
+  }
 };
 
 template <>
@@ -117,6 +156,14 @@ struct JsonConverter<ObjectRef> {
     MemoryPool* pool = variant._pool;
     return ObjectRef(pool, data != 0 ? data->asObject() : 0);
   }
+
+  static bool checkJson(const VariantData*) {
+    return false;
+  }
+
+  static bool checkJson(VariantData* data) {
+    return data && data->isObject();
+  }
 };
 
 template <>
@@ -124,16 +171,46 @@ struct JsonConverter<VariantRef> {
   static VariantRef fromJson(VariantRef variant) {
     return variant;
   }
+  static bool checkJson(VariantData* data) {
+    return data;
+  }
+  static bool checkJson(const VariantData*) {
+    return false;
+  }
 };
 
+#if ARDUINOJSON_HAS_NULLPTR
+
+template <>
+struct JsonConverter<decltype(nullptr)> {
+  static decltype(nullptr) fromJson(VariantRef) {
+    return nullptr;
+  }
+  static bool checkJson(const VariantData* data) {
+    return data == 0 || data->isNull();
+  }
+};
+
+#endif
+
 template <typename T>
-inline T variantAs(VariantConstRef variant) {
+T variantAs(VariantConstRef variant) {
   return JsonConverter<T>::fromJson(variant);
 }
 
 template <typename T>
 T variantAs(VariantRef variant) {
   return JsonConverter<T>::fromJson(variant);
+}
+
+template <typename T>
+bool variantIs(const VariantData* variant) {
+  return JsonConverter<T>::checkJson(variant);
+}
+
+template <typename T>
+bool variantIs(VariantData* variant) {
+  return JsonConverter<T>::checkJson(variant);
 }
 
 }  // namespace ARDUINOJSON_NAMESPACE

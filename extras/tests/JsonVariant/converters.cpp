@@ -18,6 +18,11 @@ void convertFromJson(Date& date, JsonVariantConst variant) {
   date.month = variant["month"];
   date.year = variant["year"];
 }
+
+// bool canConvertFromJson(Date&, JsonVariantConst variant) {
+//   return variant["day"].is<int>() && variant["month"].is<int>() &&
+//          variant["year"].is<int>();
+// }
 }  // namespace
 
 TEST_CASE("Custom converters") {
@@ -34,4 +39,12 @@ TEST_CASE("Custom converters") {
     REQUIRE(date.month == 3);
     REQUIRE(date.year == 2021);
   }
+
+  // SECTION("is<Date>() returns true") {
+  //   doc["date"]["day"] = 2;
+  //   doc["date"]["month"] = 3;
+  //   doc["date"]["year"] = 2021;
+
+  //   REQUIRE(doc["date"].is<Date>());
+  // }
 }
