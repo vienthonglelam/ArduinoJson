@@ -13,15 +13,11 @@ struct Date {
   int year;
 };
 
-template <>
-struct JsonConverter<Date> {
-  static Date fromJson(JsonVariantConst variant) {
-    return {
-      variant["day"], variant["month"], variant["year"],
-    }
-  }
-};
-
+void convertFromJson(Date& date, JsonVariantConst variant) {
+  date.day = variant["day"];
+  date.month = variant["month"];
+  date.year = variant["year"];
+}
 }  // namespace
 
 TEST_CASE("Custom converters") {
@@ -34,15 +30,8 @@ TEST_CASE("Custom converters") {
 
     Date date = doc["date"];
 
-    REQUIRE(date.day, 2)
-    REQUIRE(date.month, 3)
-    REQUIRE(date.year, 2021)
-  }
-
-  SECTION("isNull() return true") {
-    var.add("hello");
-    var.clear();
-
-    REQUIRE(var.isNull() == true);
+    REQUIRE(date.day == 2);
+    REQUIRE(date.month == 3);
+    REQUIRE(date.year == 2021);
   }
 }

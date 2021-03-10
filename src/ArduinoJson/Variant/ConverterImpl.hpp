@@ -10,6 +10,15 @@
 
 namespace ARDUINOJSON_NAMESPACE {
 
+template <typename T, typename Enable>
+struct JsonConverter {
+  static T fromJson(VariantConstRef variant) {
+    T value;
+    convertFromJson(value, variant);  // find by ADL
+    return value;
+  }
+};
+
 template <typename T>
 struct JsonConverter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
