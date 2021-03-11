@@ -29,7 +29,8 @@ struct JsonConverter<
     return data ? data->asIntegral<T>() : T();
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isInteger<T>();
   }
 };
@@ -41,7 +42,8 @@ struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
     return data ? static_cast<T>(data->asIntegral<int>()) : T();
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isInteger<int>();
   }
 };
@@ -53,7 +55,8 @@ struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
     return data ? data->asBoolean() : false;
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isBoolean();
   }
 };
@@ -65,7 +68,8 @@ struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
     return data ? data->asFloat<T>() : false;
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isFloat();
   }
 };
@@ -77,7 +81,8 @@ struct JsonConverter<const char*> {
     return data ? data->asString() : 0;
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isString();
   }
 };
@@ -94,7 +99,8 @@ struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type> {
     return s;
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isString();
   }
 };
@@ -105,7 +111,8 @@ struct JsonConverter<ArrayConstRef> {
     return ArrayConstRef(variantAsArray(variant._data));
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isArray();
   }
 };
@@ -116,7 +123,8 @@ struct JsonConverter<ObjectConstRef> {
     return ObjectConstRef(variantAsObject(variant._data));
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data && data->isObject();
   }
 };
@@ -127,7 +135,8 @@ struct JsonConverter<VariantConstRef> {
     return VariantConstRef(variant._data);
   }
 
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data;
   }
 };
@@ -140,11 +149,12 @@ struct JsonConverter<ArrayRef> {
     return ArrayRef(pool, data != 0 ? data->asArray() : 0);
   }
 
-  static bool checkJson(const VariantData*) {
+  static bool checkJson(VariantConstRef) {
     return false;
   }
 
-  static bool checkJson(VariantData* data) {
+  static bool checkJson(VariantRef variant) {
+    VariantData* data = variant._data;
     return data && data->isArray();
   }
 };
@@ -157,11 +167,12 @@ struct JsonConverter<ObjectRef> {
     return ObjectRef(pool, data != 0 ? data->asObject() : 0);
   }
 
-  static bool checkJson(const VariantData*) {
+  static bool checkJson(VariantConstRef) {
     return false;
   }
 
-  static bool checkJson(VariantData* data) {
+  static bool checkJson(VariantRef variant) {
+    VariantData* data = variant._data;
     return data && data->isObject();
   }
 };
@@ -171,10 +182,11 @@ struct JsonConverter<VariantRef> {
   static VariantRef fromJson(VariantRef variant) {
     return variant;
   }
-  static bool checkJson(VariantData* data) {
+  static bool checkJson(VariantRef variant) {
+    VariantData* data = variant._data;
     return data;
   }
-  static bool checkJson(const VariantData*) {
+  static bool checkJson(VariantConstRef) {
     return false;
   }
 };
@@ -183,10 +195,11 @@ struct JsonConverter<VariantRef> {
 
 template <>
 struct JsonConverter<decltype(nullptr)> {
-  static decltype(nullptr) fromJson(VariantRef) {
+  static decltype(nullptr) fromJson(VariantConstRef) {
     return nullptr;
   }
-  static bool checkJson(const VariantData* data) {
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData* data = variant._data;
     return data == 0 || data->isNull();
   }
 };
@@ -204,12 +217,12 @@ T variantAs(VariantRef variant) {
 }
 
 template <typename T>
-bool variantIs(const VariantData* variant) {
+bool variantIs(VariantConstRef variant) {
   return JsonConverter<T>::checkJson(variant);
 }
 
 template <typename T>
-bool variantIs(VariantData* variant) {
+bool variantIs(VariantRef variant) {
   return JsonConverter<T>::checkJson(variant);
 }
 

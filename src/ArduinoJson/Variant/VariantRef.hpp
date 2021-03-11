@@ -31,11 +31,6 @@ class VariantRefBase : public VariantTag {
   friend class JsonConverter;
 
  public:
-  template <typename T>
-  FORCE_INLINE bool is() const {
-    return variantIs<T>(_data);
-  }
-
   FORCE_INLINE bool isNull() const {
     return variantIsNull(_data);
   }
@@ -202,6 +197,11 @@ class VariantRef : public VariantRefBase<VariantData>,
   }
 
   template <typename T>
+  FORCE_INLINE bool is() const {
+    return variantIs<T>(*this);
+  }
+
+  template <typename T>
   FORCE_INLINE operator T() const {
     return variantAs<T>(*this);
   }
@@ -300,6 +300,11 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
   template <typename T>
   FORCE_INLINE T as() const {
     return variantAs<T>(*this);
+  }
+
+  template <typename T>
+  FORCE_INLINE bool is() const {
+    return variantIs<T>(*this);
   }
 
   template <typename T>

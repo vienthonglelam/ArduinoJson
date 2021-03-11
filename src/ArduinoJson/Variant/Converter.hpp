@@ -30,10 +30,10 @@ template <typename T>
 T variantAs(VariantRef variant);
 
 template <typename T>
-inline T variantIs(VariantConstRef variant);
+inline bool variantIs(VariantConstRef variant);
 
 template <typename T>
-T variantIs(VariantRef variant);
+bool variantIs(VariantRef variant);
 
 inline bool variantIsNull(const VariantData *var) {
   return var == 0 || var->isNull();
