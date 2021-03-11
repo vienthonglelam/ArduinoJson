@@ -19,10 +19,10 @@ void convertFromJson(Date& date, JsonVariantConst variant) {
   date.year = variant["year"];
 }
 
-// bool canConvertFromJson(Date&, JsonVariantConst variant) {
-//   return variant["day"].is<int>() && variant["month"].is<int>() &&
-//          variant["year"].is<int>();
-// }
+bool canConvertFromJson(Date&, JsonVariantConst variant) {
+  return variant["day"].is<int>() && variant["month"].is<int>() &&
+         variant["year"].is<int>();
+}
 }  // namespace
 
 TEST_CASE("Custom converters") {
@@ -40,11 +40,19 @@ TEST_CASE("Custom converters") {
     REQUIRE(date.year == 2021);
   }
 
-  // SECTION("is<Date>() returns true") {
-  //   doc["date"]["day"] = 2;
-  //   doc["date"]["month"] = 3;
-  //   doc["date"]["year"] = 2021;
+  SECTION("is<Date>() returns true") {
+    doc["date"]["day"] = 2;
+    doc["date"]["month"] = 3;
+    doc["date"]["year"] = 2021;
 
-  //   REQUIRE(doc["date"].is<Date>());
-  // }
+    REQUIRE(doc["date"].is<Date>());
+  }
+
+  SECTION("is<Date>() returns false") {
+    doc["date"]["day"] = 2;
+    doc["date"]["month"] = 3;
+    doc["date"]["year"] = "2021";
+
+    REQUIRE(doc["date"].is<Date>() == false);
+  }
 }

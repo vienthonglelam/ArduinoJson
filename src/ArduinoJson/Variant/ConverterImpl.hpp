@@ -17,6 +17,11 @@ struct JsonConverter {
     convertFromJson(value, variant);  // find by ADL
     return value;
   }
+
+  static bool checkJson(VariantConstRef variant) {
+    T& dummy = *static_cast<T*>(0);
+    return canConvertFromJson(dummy, variant);
+  }
 };
 
 template <typename T>
