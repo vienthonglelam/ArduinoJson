@@ -85,95 +85,15 @@ class VariantRef : public VariantRefBase<VariantData>,
     return variantSetNull(_data);
   }
 
-  // set(bool value)
   template <typename T>
-  FORCE_INLINE bool set(
-      T value, typename enable_if<is_same<T, bool>::value>::type * = 0) const {
-    return variantSetBoolean(_data, value);
+  FORCE_INLINE bool set(const T &value) const {
+    return JsonConverter<T>::toJson(*this, value);
   }
 
-  // set(double value);
-  // set(float value);
   template <typename T>
-  FORCE_INLINE bool set(
-      T value,
-      typename enable_if<is_floating_point<T>::value>::type * = 0) const {
-    return variantSetFloat(_data, static_cast<Float>(value));
+  FORCE_INLINE bool set(T *value) const {
+    return JsonConverter<T *>::toJson(*this, value);
   }
-
-  // set(char)
-  // set(signed short)
-  // set(signed int)
-  // set(signed long)
-  // set(signed char)
-  // set(unsigned short)
-  // set(unsigned int)
-  // set(unsigned long)
-  template <typename T>
-  FORCE_INLINE bool set(
-      T value,
-      typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
-                         !is_same<char, T>::value>::type * = 0) const {
-    return variantSetInteger<T>(_data, value);
-  }
-
-  // set(SerializedValue<const char *>)
-  FORCE_INLINE bool set(SerializedValue<const char *> value) const {
-    return variantSetLinkedRaw(_data, value);
-  }
-
-  // set(SerializedValue<std::string>)
-  // set(SerializedValue<String>)
-  // set(SerializedValue<const __FlashStringHelper*>)
-  template <typename T>
-  FORCE_INLINE bool set(
-      SerializedValue<T> value,
-      typename enable_if<!is_same<const char *, T>::value>::type * = 0) const {
-    return variantSetOwnedRaw(_data, value, _pool);
-  }
-
-  // set(const std::string&)
-  // set(const String&)
-  template <typename T>
-  FORCE_INLINE bool set(
-      const T &value,
-      typename enable_if<IsString<T>::value>::type * = 0) const {
-    return variantSetString(_data, adaptString(value), _pool);
-  }
-  // set(char*)
-  // set(const __FlashStringHelper*)
-  // set(const char*)
-  template <typename T>
-  FORCE_INLINE bool set(
-      T *value, typename enable_if<IsString<T *>::value>::type * = 0) const {
-    return variantSetString(_data, adaptString(value), _pool);
-  }
-
-  // set(VariantRef)
-  // set(VariantConstRef)
-  // set(ArrayRef)
-  // set(ArrayConstRef)
-  // set(ObjectRef)
-  // set(ObjecConstRef)
-  // set(const JsonDocument&)
-  template <typename TVariant>
-  typename enable_if<IsVisitable<TVariant>::value, bool>::type set(
-      const TVariant &value) const;
-
-  // set(enum value)
-  template <typename T>
-  FORCE_INLINE bool set(
-      T value, typename enable_if<is_enum<T>::value>::type * = 0) const {
-    return variantSetInteger(_data, static_cast<Integer>(value));
-  }
-
-#if ARDUINOJSON_HAS_NULLPTR
-  // set(nullptr_t)
-  FORCE_INLINE bool set(decltype(nullptr)) const {
-    variantSetNull(_data);
-    return true;
-  }
-#endif
 
   template <typename T>
   FORCE_INLINE T as() const {

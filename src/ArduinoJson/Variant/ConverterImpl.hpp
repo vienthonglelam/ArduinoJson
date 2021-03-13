@@ -12,6 +12,10 @@ namespace ARDUINOJSON_NAMESPACE {
 
 template <typename T, typename Enable>
 struct JsonConverter {
+  static bool toJson(VariantRef variant, const T& value) {
+    return convertToJson(variant, value);  // find by ADL
+  }
+
   static T fromJson(VariantConstRef variant) {
     T value;
     convertFromJson(value, variant);  // find by ADL
@@ -28,6 +32,10 @@ template <typename T>
 struct JsonConverter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
                           !is_same<char, T>::value>::type> {
+  static bool toJson(VariantRef variant, T value) {
+    return variantSetInteger<T>(variant._data, value);
+  }
+
   static T fromJson(VariantConstRef variant) {
     ARDUINOJSON_ASSERT_INTEGER_TYPE_IS_SUPPORTED(T);
     const VariantData* data = variant._data;
@@ -42,6 +50,10 @@ struct JsonConverter<
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
+  static bool toJson(VariantRef variant, T value) {
+    return variantSetInteger(variant._data, static_cast<Integer>(value));
+  }
+
   static T fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     return data ? static_cast<T>(data->asIntegral<int>()) : T();
@@ -53,8 +65,13 @@ struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
   }
 };
 
+// TODO: simplify
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
+  static bool toJson(VariantRef variant, T value) {
+    return variantSetBoolean(variant._data, value);
+  }
+
   static T fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     return data ? data->asBoolean() : false;
@@ -68,6 +85,10 @@ struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
 
 template <typename T>
 struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
+  static bool toJson(VariantRef variant, T value) {
+    return variantSetFloat(variant._data, static_cast<Float>(value));
+  }
+
   static T fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     return data ? data->asFloat<T>() : false;
@@ -81,6 +102,10 @@ struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
 
 template <>
 struct JsonConverter<const char*> {
+  static bool toJson(VariantRef variant, const char* value) {
+    return variantSetString(variant._data, adaptString(value), variant._pool);
+  }
+
   static const char* fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     return data ? data->asString() : 0;
@@ -93,7 +118,11 @@ struct JsonConverter<const char*> {
 };
 
 template <typename T>
-struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type> {
+struct JsonConverter<T, typename enable_if<IsString<T>::value>::type> {
+  static bool toJson(VariantRef variant, const T& value) {
+    return variantSetString(variant._data, adaptString(value), variant._pool);
+  }
+
   static T fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     const char* cstr = data != 0 ? data->asString() : 0;
@@ -111,7 +140,30 @@ struct JsonConverter<T, typename enable_if<IsWriteableString<T>::value>::type> {
 };
 
 template <>
+struct JsonConverter<SerializedValue<const char*> > {
+  static bool toJson(VariantRef variant, SerializedValue<const char*> value) {
+    return variantSetLinkedRaw(variant._data, value);
+  }
+};
+
+// SerializedValue<std::string>
+// SerializedValue<String>
+// SerializedValue<const __FlashStringHelper*>
+template <typename T>
+struct JsonConverter<
+    SerializedValue<T>,
+    typename enable_if<!is_same<const char*, T>::value>::type> {
+  static bool toJson(VariantRef variant, SerializedValue<T> value) {
+    return variantSetOwnedRaw(variant._data, value, variant._pool);
+  }
+};
+
+template <>
 struct JsonConverter<ArrayConstRef> {
+  static bool toJson(VariantRef variant, VariantConstRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
+
   static ArrayConstRef fromJson(VariantConstRef variant) {
     return ArrayConstRef(variantAsArray(variant._data));
   }
@@ -124,6 +176,10 @@ struct JsonConverter<ArrayConstRef> {
 
 template <>
 struct JsonConverter<ObjectConstRef> {
+  static bool toJson(VariantRef variant, VariantConstRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
+
   static ObjectConstRef fromJson(VariantConstRef variant) {
     return ObjectConstRef(variantAsObject(variant._data));
   }
@@ -136,6 +192,10 @@ struct JsonConverter<ObjectConstRef> {
 
 template <>
 struct JsonConverter<VariantConstRef> {
+  static bool toJson(VariantRef variant, VariantConstRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
+
   static VariantConstRef fromJson(VariantConstRef variant) {
     return VariantConstRef(variant._data);
   }
@@ -148,6 +208,10 @@ struct JsonConverter<VariantConstRef> {
 
 template <>
 struct JsonConverter<ArrayRef> {
+  static bool toJson(VariantRef variant, VariantConstRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
+
   static ArrayRef fromJson(VariantRef variant) {
     VariantData* data = variant._data;
     MemoryPool* pool = variant._pool;
@@ -166,6 +230,10 @@ struct JsonConverter<ArrayRef> {
 
 template <>
 struct JsonConverter<ObjectRef> {
+  static bool toJson(VariantRef variant, VariantConstRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
+
   static ObjectRef fromJson(VariantRef variant) {
     VariantData* data = variant._data;
     MemoryPool* pool = variant._pool;
@@ -184,6 +252,9 @@ struct JsonConverter<ObjectRef> {
 
 template <>
 struct JsonConverter<VariantRef> {
+  static bool toJson(VariantRef variant, VariantRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
   static VariantRef fromJson(VariantRef variant) {
     return variant;
   }
@@ -200,6 +271,10 @@ struct JsonConverter<VariantRef> {
 
 template <>
 struct JsonConverter<decltype(nullptr)> {
+  static bool toJson(VariantRef variant, decltype(nullptr)) {
+    variantSetNull(variant._data);
+    return true;
+  }
   static decltype(nullptr) fromJson(VariantConstRef) {
     return nullptr;
   }
