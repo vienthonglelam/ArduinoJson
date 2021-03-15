@@ -198,7 +198,7 @@ class VariantRef : public VariantRefBase<VariantData>,
 
  private:
   MemoryPool *_pool;
-};  // namespace ARDUINOJSON_NAMESPACE
+};
 
 class VariantConstRef : public VariantRefBase<const VariantData>,
                         public VariantOperators<VariantConstRef>,
@@ -274,4 +274,38 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
     return getMember(key);
   }
 };
+
+template <>
+struct JsonConverter<VariantRef> {
+  static bool toJson(VariantRef variant, VariantRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
+  static VariantRef fromJson(VariantRef variant) {
+    return variant;
+  }
+  static bool checkJson(VariantRef variant) {
+    VariantData *data = variant._data;
+    return data;
+  }
+  static bool checkJson(VariantConstRef) {
+    return false;
+  }
+};
+
+template <>
+struct JsonConverter<VariantConstRef> {
+  static bool toJson(VariantRef variant, VariantConstRef value) {
+    return variantCopyFrom(variant._data, value._data, variant._pool);
+  }
+
+  static VariantConstRef fromJson(VariantConstRef variant) {
+    return VariantConstRef(variant._data);
+  }
+
+  static bool checkJson(VariantConstRef variant) {
+    const VariantData *data = variant._data;
+    return data;
+  }
+};
+
 }  // namespace ARDUINOJSON_NAMESPACE
