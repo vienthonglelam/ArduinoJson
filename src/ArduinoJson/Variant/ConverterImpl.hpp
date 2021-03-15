@@ -65,14 +65,13 @@ struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
   }
 };
 
-// TODO: simplify
-template <typename T>
-struct JsonConverter<T, typename enable_if<is_same<T, bool>::value>::type> {
-  static bool toJson(VariantRef variant, T value) {
+template <>
+struct JsonConverter<bool> {
+  static bool toJson(VariantRef variant, bool value) {
     return variantSetBoolean(variant._data, value);
   }
 
-  static T fromJson(VariantConstRef variant) {
+  static bool fromJson(VariantConstRef variant) {
     const VariantData* data = variant._data;
     return data ? data->asBoolean() : false;
   }
