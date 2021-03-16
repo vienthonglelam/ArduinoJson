@@ -10,10 +10,6 @@
 namespace ARDUINOJSON_NAMESPACE {
 
 // TODO: remove
-class ArrayRef;
-class ArrayConstRef;
-class ObjectRef;
-class ObjectConstRef;
 class VariantRef;
 class VariantConstRef;
 
