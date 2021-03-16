@@ -43,13 +43,6 @@ inline bool variantCopyFrom(VariantData *dst, const VariantData *src,
 
 inline int variantCompare(const VariantData *a, const VariantData *b);
 
-inline bool variantSetBoolean(VariantData *var, bool value) {
-  if (!var)
-    return false;
-  var->setBoolean(value);
-  return true;
-}
-
 inline bool variantSetFloat(VariantData *var, Float value) {
   if (!var)
     return false;

@@ -73,7 +73,11 @@ struct Converter<T, typename enable_if<is_enum<T>::value>::type> {
 template <>
 struct Converter<bool> {
   static bool toJson(VariantRef variant, bool value) {
-    return variantSetBoolean(variant._data, value);
+    VariantData* data = variant._data;
+    if (!data)
+      return false;
+    data->setBoolean(value);
+    return true;
   }
 
   static bool fromJson(VariantConstRef variant) {
