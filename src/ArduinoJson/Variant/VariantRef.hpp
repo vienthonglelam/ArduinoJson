@@ -119,7 +119,7 @@ class VariantRef : public VariantRefBase<VariantData>,
 
   template <typename T>
   FORCE_INLINE bool is() const {
-    return variantIs<T>(*this);
+    return Converter<T>::checkJson(*this);
   }
 
   template <typename T>
@@ -225,7 +225,7 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
 
   template <typename T>
   FORCE_INLINE bool is() const {
-    return variantIs<T>(*this);
+    return Converter<T>::checkJson(*this);
   }
 
   template <typename T>

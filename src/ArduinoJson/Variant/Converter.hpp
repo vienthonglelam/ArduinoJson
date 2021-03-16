@@ -18,12 +18,6 @@ struct Converter;
 
 // ---
 
-template <typename T>
-inline bool variantIs(VariantConstRef variant);
-
-template <typename T>
-bool variantIs(VariantRef variant);
-
 inline bool variantIsNull(const VariantData *var) {
   return var == 0 || var->isNull();
 }

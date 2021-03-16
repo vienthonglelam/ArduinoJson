@@ -175,14 +175,4 @@ struct Converter<decltype(nullptr)> {
 
 #endif
 
-template <typename T>
-bool variantIs(VariantConstRef variant) {
-  return Converter<T>::checkJson(variant);
-}
-
-template <typename T>
-bool variantIs(VariantRef variant) {
-  return Converter<T>::checkJson(variant);
-}
-
 }  // namespace ARDUINOJSON_NAMESPACE
