@@ -176,16 +176,6 @@ struct Converter<decltype(nullptr)> {
 #endif
 
 template <typename T>
-T variantAs(VariantConstRef variant) {
-  return Converter<T>::fromJson(variant);
-}
-
-template <typename T>
-T variantAs(VariantRef variant) {
-  return Converter<T>::fromJson(variant);
-}
-
-template <typename T>
 bool variantIs(VariantConstRef variant) {
   return Converter<T>::checkJson(variant);
 }

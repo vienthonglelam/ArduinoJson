@@ -97,6 +97,7 @@ class VariantRef : public VariantRefBase<VariantData>,
 
   template <typename T>
   FORCE_INLINE T as() const {
+    // TODO: move comment
     /********************************************************************
      **                THIS IS NOT A BUG IN THE LIBRARY                **
      **                --------------------------------                **
@@ -113,7 +114,7 @@ class VariantRef : public VariantRefBase<VariantData>,
      **    int8_t age = doc["age"];                                    **
      **    auto city = doc["city"].as<const char*>()                   **
      ********************************************************************/
-    return variantAs<T>(*this);
+    return Converter<T>::fromJson(*this);
   }
 
   template <typename T>
@@ -123,7 +124,7 @@ class VariantRef : public VariantRefBase<VariantData>,
 
   template <typename T>
   FORCE_INLINE operator T() const {
-    return variantAs<T>(*this);
+    return Converter<T>::fromJson(*this);
   }
 
   template <typename TVisitor>
@@ -219,7 +220,7 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
 
   template <typename T>
   FORCE_INLINE T as() const {
-    return variantAs<T>(*this);
+    return Converter<T>::fromJson(*this);
   }
 
   template <typename T>
@@ -229,7 +230,7 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
 
   template <typename T>
   FORCE_INLINE operator T() const {
-    return variantAs<T>(*this);
+    return Converter<T>::fromJson(*this);
   }
 
   FORCE_INLINE VariantConstRef getElement(size_t) const;

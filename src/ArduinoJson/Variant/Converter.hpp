@@ -18,13 +18,6 @@ struct Converter;
 
 // ---
 
-// TODO: inline
-template <typename T>
-inline T variantAs(VariantConstRef variant);
-
-template <typename T>
-T variantAs(VariantRef variant);
-
 template <typename T>
 inline bool variantIs(VariantConstRef variant);
 
