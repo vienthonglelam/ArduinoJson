@@ -43,13 +43,6 @@ inline bool variantCopyFrom(VariantData *dst, const VariantData *src,
 
 inline int variantCompare(const VariantData *a, const VariantData *b);
 
-inline bool variantSetFloat(VariantData *var, Float value) {
-  if (!var)
-    return false;
-  var->setFloat(value);
-  return true;
-}
-
 inline bool variantSetLinkedRaw(VariantData *var,
                                 SerializedValue<const char *> value) {
   if (!var)

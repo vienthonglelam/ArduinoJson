@@ -94,7 +94,11 @@ struct Converter<bool> {
 template <typename T>
 struct Converter<T, typename enable_if<is_floating_point<T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
-    return variantSetFloat(variant._data, static_cast<Float>(value));
+    VariantData* data = variant._data;
+    if (!data)
+      return false;
+    data->setFloat(static_cast<Float>(value));
+    return true;
   }
 
   static T fromJson(VariantConstRef variant) {
