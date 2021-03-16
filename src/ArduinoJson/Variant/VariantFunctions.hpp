@@ -85,15 +85,6 @@ inline bool variantSetString(VariantData *var, TAdaptedString value,
   return var->setString(value, pool);
 }
 
-template <typename T>
-inline bool variantSetInteger(VariantData *var, T value) {
-  ARDUINOJSON_ASSERT_INTEGER_TYPE_IS_SUPPORTED(T);
-  if (!var)
-    return false;
-  var->setInteger(value);
-  return true;
-}
-
 inline size_t variantSize(const VariantData *var) {
   return var != 0 ? var->size() : 0;
 }

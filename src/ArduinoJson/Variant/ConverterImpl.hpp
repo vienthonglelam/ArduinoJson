@@ -33,7 +33,12 @@ struct Converter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
                           !is_same<char, T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
-    return variantSetInteger<T>(variant._data, value);
+    VariantData* data = variant._data;
+    ARDUINOJSON_ASSERT_INTEGER_TYPE_IS_SUPPORTED(T);
+    if (!data)
+      return false;
+    data->setInteger(value);
+    return true;
   }
 
   static T fromJson(VariantConstRef variant) {
@@ -51,7 +56,7 @@ struct Converter<
 template <typename T>
 struct Converter<T, typename enable_if<is_enum<T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
-    return variantSetInteger(variant._data, static_cast<Integer>(value));
+    return variant.set(static_cast<Integer>(value));
   }
 
   static T fromJson(VariantConstRef variant) {
