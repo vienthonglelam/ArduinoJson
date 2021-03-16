@@ -154,7 +154,11 @@ struct Converter<T, typename enable_if<IsString<T>::value>::type> {
 template <>
 struct Converter<SerializedValue<const char*> > {
   static bool toJson(VariantRef variant, SerializedValue<const char*> value) {
-    return variantSetLinkedRaw(variant._data, value);
+    VariantData* data = variant._data;
+    if (!data)
+      return false;
+    data->setLinkedRaw(value);
+    return true;
   }
 };
 
@@ -165,7 +169,9 @@ template <typename T>
 struct Converter<SerializedValue<T>,
                  typename enable_if<!is_same<const char*, T>::value>::type> {
   static bool toJson(VariantRef variant, SerializedValue<T> value) {
-    return variantSetOwnedRaw(variant._data, value, variant._pool);
+    VariantData* data = variant._data;
+    MemoryPool* pool = variant._pool;
+    return data != 0 && data->setOwnedRaw(value, pool);
   }
 };
 
