@@ -18,7 +18,7 @@ class VariantRef;
 class VariantConstRef;
 
 template <typename T, typename Enable = void>
-struct JsonConverter;
+struct Converter;
 
 // ---
 

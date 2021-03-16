@@ -238,7 +238,7 @@ class ObjectRef : public ObjectRefBase<CollectionData>,
 };
 
 template <>
-struct JsonConverter<ObjectConstRef> {
+struct Converter<ObjectConstRef> {
   static bool toJson(VariantRef variant, VariantConstRef value) {
     return variantCopyFrom(variant._data, value._data, variant._pool);
   }
@@ -254,7 +254,7 @@ struct JsonConverter<ObjectConstRef> {
 };
 
 template <>
-struct JsonConverter<ObjectRef> {
+struct Converter<ObjectRef> {
   static bool toJson(VariantRef variant, VariantConstRef value) {
     return variantCopyFrom(variant._data, value._data, variant._pool);
   }

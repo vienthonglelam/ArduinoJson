@@ -11,7 +11,7 @@
 namespace ARDUINOJSON_NAMESPACE {
 
 template <typename T, typename Enable>
-struct JsonConverter {
+struct Converter {
   static bool toJson(VariantRef variant, const T& value) {
     return convertToJson(variant, value);  // find by ADL
   }
@@ -29,7 +29,7 @@ struct JsonConverter {
 };
 
 template <typename T>
-struct JsonConverter<
+struct Converter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
                           !is_same<char, T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
@@ -49,7 +49,7 @@ struct JsonConverter<
 };
 
 template <typename T>
-struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
+struct Converter<T, typename enable_if<is_enum<T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
     return variantSetInteger(variant._data, static_cast<Integer>(value));
   }
@@ -66,7 +66,7 @@ struct JsonConverter<T, typename enable_if<is_enum<T>::value>::type> {
 };
 
 template <>
-struct JsonConverter<bool> {
+struct Converter<bool> {
   static bool toJson(VariantRef variant, bool value) {
     return variantSetBoolean(variant._data, value);
   }
@@ -83,7 +83,7 @@ struct JsonConverter<bool> {
 };
 
 template <typename T>
-struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
+struct Converter<T, typename enable_if<is_floating_point<T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
     return variantSetFloat(variant._data, static_cast<Float>(value));
   }
@@ -100,7 +100,7 @@ struct JsonConverter<T, typename enable_if<is_floating_point<T>::value>::type> {
 };
 
 template <>
-struct JsonConverter<const char*> {
+struct Converter<const char*> {
   static bool toJson(VariantRef variant, const char* value) {
     return variantSetString(variant._data, adaptString(value), variant._pool);
   }
@@ -117,7 +117,7 @@ struct JsonConverter<const char*> {
 };
 
 template <typename T>
-struct JsonConverter<T, typename enable_if<IsString<T>::value>::type> {
+struct Converter<T, typename enable_if<IsString<T>::value>::type> {
   static bool toJson(VariantRef variant, const T& value) {
     return variantSetString(variant._data, adaptString(value), variant._pool);
   }
@@ -139,7 +139,7 @@ struct JsonConverter<T, typename enable_if<IsString<T>::value>::type> {
 };
 
 template <>
-struct JsonConverter<SerializedValue<const char*> > {
+struct Converter<SerializedValue<const char*> > {
   static bool toJson(VariantRef variant, SerializedValue<const char*> value) {
     return variantSetLinkedRaw(variant._data, value);
   }
@@ -149,9 +149,8 @@ struct JsonConverter<SerializedValue<const char*> > {
 // SerializedValue<String>
 // SerializedValue<const __FlashStringHelper*>
 template <typename T>
-struct JsonConverter<
-    SerializedValue<T>,
-    typename enable_if<!is_same<const char*, T>::value>::type> {
+struct Converter<SerializedValue<T>,
+                 typename enable_if<!is_same<const char*, T>::value>::type> {
   static bool toJson(VariantRef variant, SerializedValue<T> value) {
     return variantSetOwnedRaw(variant._data, value, variant._pool);
   }
@@ -160,7 +159,7 @@ struct JsonConverter<
 #if ARDUINOJSON_HAS_NULLPTR
 
 template <>
-struct JsonConverter<decltype(nullptr)> {
+struct Converter<decltype(nullptr)> {
   static bool toJson(VariantRef variant, decltype(nullptr)) {
     variantSetNull(variant._data);
     return true;
@@ -178,22 +177,22 @@ struct JsonConverter<decltype(nullptr)> {
 
 template <typename T>
 T variantAs(VariantConstRef variant) {
-  return JsonConverter<T>::fromJson(variant);
+  return Converter<T>::fromJson(variant);
 }
 
 template <typename T>
 T variantAs(VariantRef variant) {
-  return JsonConverter<T>::fromJson(variant);
+  return Converter<T>::fromJson(variant);
 }
 
 template <typename T>
 bool variantIs(VariantConstRef variant) {
-  return JsonConverter<T>::checkJson(variant);
+  return Converter<T>::checkJson(variant);
 }
 
 template <typename T>
 bool variantIs(VariantRef variant) {
-  return JsonConverter<T>::checkJson(variant);
+  return Converter<T>::checkJson(variant);
 }
 
 }  // namespace ARDUINOJSON_NAMESPACE

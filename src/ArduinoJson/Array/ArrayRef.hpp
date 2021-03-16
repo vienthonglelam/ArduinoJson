@@ -166,7 +166,7 @@ class ArrayRef : public ArrayRefBase<CollectionData>,
 };
 
 template <>
-struct JsonConverter<ArrayConstRef> {
+struct Converter<ArrayConstRef> {
   static bool toJson(VariantRef variant, VariantConstRef value) {
     return variantCopyFrom(variant._data, value._data, variant._pool);
   }
@@ -182,7 +182,7 @@ struct JsonConverter<ArrayConstRef> {
 };
 
 template <>
-struct JsonConverter<ArrayRef> {
+struct Converter<ArrayRef> {
   static bool toJson(VariantRef variant, VariantConstRef value) {
     return variantCopyFrom(variant._data, value._data, variant._pool);
   }

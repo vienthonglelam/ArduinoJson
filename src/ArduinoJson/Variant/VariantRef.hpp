@@ -28,7 +28,7 @@ class ObjectRef;
 template <typename TData>
 class VariantRefBase : public VariantTag {
   template <typename T, typename Enable>
-  friend class JsonConverter;
+  friend class Converter;
 
  public:
   FORCE_INLINE bool isNull() const {
@@ -71,7 +71,7 @@ class VariantRef : public VariantRefBase<VariantData>,
   friend class VariantConstRef;
 
   template <typename T, typename Enable>
-  friend class JsonConverter;
+  friend class Converter;
 
  public:
   // Intenal use only
@@ -87,12 +87,12 @@ class VariantRef : public VariantRefBase<VariantData>,
 
   template <typename T>
   FORCE_INLINE bool set(const T &value) const {
-    return JsonConverter<T>::toJson(*this, value);
+    return Converter<T>::toJson(*this, value);
   }
 
   template <typename T>
   FORCE_INLINE bool set(T *value) const {
-    return JsonConverter<T *>::toJson(*this, value);
+    return Converter<T *>::toJson(*this, value);
   }
 
   template <typename T>
@@ -276,7 +276,7 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
 };
 
 template <>
-struct JsonConverter<VariantRef> {
+struct Converter<VariantRef> {
   static bool toJson(VariantRef variant, VariantRef value) {
     return variantCopyFrom(variant._data, value._data, variant._pool);
   }
@@ -293,7 +293,7 @@ struct JsonConverter<VariantRef> {
 };
 
 template <>
-struct JsonConverter<VariantConstRef> {
+struct Converter<VariantConstRef> {
   static bool toJson(VariantRef variant, VariantConstRef value) {
     return variantCopyFrom(variant._data, value._data, variant._pool);
   }
