@@ -134,4 +134,8 @@ NO_INLINE VariantData *variantGetOrAddMember(VariantData *var,
   return var != 0 ? var->getOrAddMember(adaptString(key), pool) : 0;
 }
 
+inline bool variantIsNull(const VariantData *var) {
+  return var == 0 || var->isNull();
+}
+
 }  // namespace ARDUINOJSON_NAMESPACE
