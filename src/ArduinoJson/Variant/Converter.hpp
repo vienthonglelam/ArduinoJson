@@ -9,15 +9,12 @@
 
 namespace ARDUINOJSON_NAMESPACE {
 
-// TODO: remove
-class VariantRef;
-class VariantConstRef;
-
 template <typename T, typename Enable = void>
 struct Converter;
 
 // ---
 
+// TODO: move
 inline bool variantIsNull(const VariantData *var) {
   return var == 0 || var->isNull();
 }
