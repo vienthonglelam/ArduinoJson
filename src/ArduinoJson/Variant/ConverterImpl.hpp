@@ -13,18 +13,24 @@ namespace ARDUINOJSON_NAMESPACE {
 template <typename T, typename Enable>
 struct Converter {
   static bool toJson(VariantRef variant, const T& value) {
-    return convertToJson(variant, value);  // find by ADL
+    // clang-format off
+    return convertToJson(variant, value); // Error here? See https://arduinojson.org/v6/unsupported-set/
+    // clang-format on
   }
 
   static T fromJson(VariantConstRef variant) {
-    T value;
-    convertFromJson(value, variant);  // find by ADL
+    // clang-format off
+    T value; // Error here? See https://arduinojson.org/v6/non-default-constructible/
+    convertFromJson(value, variant);  // Error here? See https://arduinojson.org/v6/unsupported-as/
+    // clang-format on
     return value;
   }
 
   static bool checkJson(VariantConstRef variant) {
     T& dummy = *static_cast<T*>(0);
-    return canConvertFromJson(dummy, variant);
+    // clang-format off
+    return canConvertFromJson(dummy, variant);  // Error here? See https://arduinojson.org/v6/unsupported-is/
+    // clang-format on
   }
 };
 
@@ -33,7 +39,7 @@ struct Converter<
     T, typename enable_if<is_integral<T>::value && !is_same<bool, T>::value &&
                           !is_same<char, T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
-    VariantData* data = variant._data;
+    VariantData* data = getData(variant);
     ARDUINOJSON_ASSERT_INTEGER_TYPE_IS_SUPPORTED(T);
     if (!data)
       return false;
@@ -43,12 +49,12 @@ struct Converter<
 
   static T fromJson(VariantConstRef variant) {
     ARDUINOJSON_ASSERT_INTEGER_TYPE_IS_SUPPORTED(T);
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data ? data->asIntegral<T>() : T();
   }
 
   static bool checkJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data && data->isInteger<T>();
   }
 };
@@ -60,12 +66,12 @@ struct Converter<T, typename enable_if<is_enum<T>::value>::type> {
   }
 
   static T fromJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data ? static_cast<T>(data->asIntegral<int>()) : T();
   }
 
   static bool checkJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data && data->isInteger<int>();
   }
 };
@@ -73,7 +79,7 @@ struct Converter<T, typename enable_if<is_enum<T>::value>::type> {
 template <>
 struct Converter<bool> {
   static bool toJson(VariantRef variant, bool value) {
-    VariantData* data = variant._data;
+    VariantData* data = getData(variant);
     if (!data)
       return false;
     data->setBoolean(value);
@@ -81,12 +87,12 @@ struct Converter<bool> {
   }
 
   static bool fromJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data ? data->asBoolean() : false;
   }
 
   static bool checkJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data && data->isBoolean();
   }
 };
@@ -94,7 +100,7 @@ struct Converter<bool> {
 template <typename T>
 struct Converter<T, typename enable_if<is_floating_point<T>::value>::type> {
   static bool toJson(VariantRef variant, T value) {
-    VariantData* data = variant._data;
+    VariantData* data = getData(variant);
     if (!data)
       return false;
     data->setFloat(static_cast<Float>(value));
@@ -102,12 +108,12 @@ struct Converter<T, typename enable_if<is_floating_point<T>::value>::type> {
   }
 
   static T fromJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data ? data->asFloat<T>() : false;
   }
 
   static bool checkJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data && data->isFloat();
   }
 };
@@ -115,46 +121,52 @@ struct Converter<T, typename enable_if<is_floating_point<T>::value>::type> {
 template <>
 struct Converter<const char*> {
   static bool toJson(VariantRef variant, const char* value) {
-    return variantSetString(variant._data, adaptString(value), variant._pool);
+    // TODO: don't pass pool
+    return variantSetString(getData(variant), adaptString(value),
+                            getPool(variant));
   }
 
   static const char* fromJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data ? data->asString() : 0;
   }
 
   static bool checkJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data && data->isString();
   }
 };
 
 template <typename T>
-struct Converter<T, typename enable_if<IsString<T>::value>::type> {
-  static bool toJson(VariantRef variant, const T& value) {
-    return variantSetString(variant._data, adaptString(value), variant._pool);
-  }
+inline typename enable_if<IsString<T>::value, bool>::type convertToJson(
+    VariantRef variant, const T& value) {
+  VariantData* data = getData(variant);
+  MemoryPool* pool = getPool(variant);
+  return variantSetString(data, adaptString(value), pool);
+}
 
-  static T fromJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
-    const char* cstr = data != 0 ? data->asString() : 0;
-    if (cstr)
-      return T(cstr);
-    T s;
-    serializeJson(variant, s);
-    return s;
-  }
+template <typename T>
+inline typename enable_if<IsWriteableString<T>::value>::type convertFromJson(
+    T& value, VariantConstRef variant) {
+  const VariantData* data = getData(variant);
+  const char* cstr = data != 0 ? data->asString() : 0;
+  if (cstr)
+    value = cstr;
+  else
+    serializeJson(variant, value);
+}
 
-  static bool checkJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
-    return data && data->isString();
-  }
-};
+template <typename T>
+inline typename enable_if<IsWriteableString<T>::value, bool>::type
+canConvertFromJson(T&, VariantConstRef variant) {
+  const VariantData* data = getData(variant);
+  return data && data->isString();
+}
 
 template <>
 struct Converter<SerializedValue<const char*> > {
   static bool toJson(VariantRef variant, SerializedValue<const char*> value) {
-    VariantData* data = variant._data;
+    VariantData* data = getData(variant);
     if (!data)
       return false;
     data->setLinkedRaw(value);
@@ -169,8 +181,8 @@ template <typename T>
 struct Converter<SerializedValue<T>,
                  typename enable_if<!is_same<const char*, T>::value>::type> {
   static bool toJson(VariantRef variant, SerializedValue<T> value) {
-    VariantData* data = variant._data;
-    MemoryPool* pool = variant._pool;
+    VariantData* data = getData(variant);
+    MemoryPool* pool = getPool(variant);
     return data != 0 && data->setOwnedRaw(value, pool);
   }
 };
@@ -180,14 +192,14 @@ struct Converter<SerializedValue<T>,
 template <>
 struct Converter<decltype(nullptr)> {
   static bool toJson(VariantRef variant, decltype(nullptr)) {
-    variantSetNull(variant._data);
+    variantSetNull(getData(variant));
     return true;
   }
   static decltype(nullptr) fromJson(VariantConstRef) {
     return nullptr;
   }
   static bool checkJson(VariantConstRef variant) {
-    const VariantData* data = variant._data;
+    const VariantData* data = getData(variant);
     return data == 0 || data->isNull();
   }
 };

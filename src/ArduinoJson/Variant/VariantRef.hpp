@@ -27,9 +27,6 @@ class ObjectRef;
 // Contains the methods shared by VariantRef and VariantConstRef
 template <typename TData>
 class VariantRefBase : public VariantTag {
-  template <typename T, typename Enable>
-  friend struct Converter;
-
  public:
   FORCE_INLINE bool isNull() const {
     return variantIsNull(_data);
@@ -54,6 +51,10 @@ class VariantRefBase : public VariantTag {
  protected:
   VariantRefBase(TData *data) : _data(data) {}
   TData *_data;
+
+  friend TData *getData(const VariantRefBase &variant) {
+    return variant._data;
+  }
 };
 
 // A variant that can be a any value serializable to a JSON value.
@@ -69,9 +70,6 @@ class VariantRef : public VariantRefBase<VariantData>,
                    public Visitable {
   typedef VariantRefBase<VariantData> base_type;
   friend class VariantConstRef;
-
-  template <typename T, typename Enable>
-  friend struct Converter;
 
  public:
   // Intenal use only
@@ -97,23 +95,6 @@ class VariantRef : public VariantRefBase<VariantData>,
 
   template <typename T>
   FORCE_INLINE T as() const {
-    // TODO: move comment
-    /********************************************************************
-     **                THIS IS NOT A BUG IN THE LIBRARY                **
-     **                --------------------------------                **
-     **  Get a compilation error pointing here?                        **
-     **  It doesn't mean the error *is* here.                          **
-     **  Often, it's because you try to extract the wrong value type.  **
-     **                                                                **
-     **  For example:                                                  **
-     **    char* name = doc["name"];                                   **
-     **    char age = doc["age"];                                      **
-     **    auto city = doc["city"].as<char*>()                         **
-     **  Instead, use:                                                 **
-     **    const char* name = doc["name"];                             **
-     **    int8_t age = doc["age"];                                    **
-     **    auto city = doc["city"].as<const char*>()                   **
-     ********************************************************************/
     return Converter<T>::fromJson(*this);
   }
 
@@ -199,6 +180,10 @@ class VariantRef : public VariantRefBase<VariantData>,
 
  private:
   MemoryPool *_pool;
+
+  friend MemoryPool *getPool(const VariantRef &variant) {
+    return variant._pool;
+  }
 };
 
 class VariantConstRef : public VariantRefBase<const VariantData>,
@@ -279,13 +264,13 @@ class VariantConstRef : public VariantRefBase<const VariantData>,
 template <>
 struct Converter<VariantRef> {
   static bool toJson(VariantRef variant, VariantRef value) {
-    return variantCopyFrom(variant._data, value._data, variant._pool);
+    return variantCopyFrom(getData(variant), getData(value), getPool(variant));
   }
   static VariantRef fromJson(VariantRef variant) {
     return variant;
   }
   static bool checkJson(VariantRef variant) {
-    VariantData *data = variant._data;
+    VariantData *data = getData(variant);
     return data;
   }
   static bool checkJson(VariantConstRef) {
@@ -296,15 +281,15 @@ struct Converter<VariantRef> {
 template <>
 struct Converter<VariantConstRef> {
   static bool toJson(VariantRef variant, VariantConstRef value) {
-    return variantCopyFrom(variant._data, value._data, variant._pool);
+    return variantCopyFrom(getData(variant), getData(value), getPool(variant));
   }
 
   static VariantConstRef fromJson(VariantConstRef variant) {
-    return VariantConstRef(variant._data);
+    return VariantConstRef(getData(variant));
   }
 
   static bool checkJson(VariantConstRef variant) {
-    const VariantData *data = variant._data;
+    const VariantData *data = getData(variant);
     return data;
   }
 };
