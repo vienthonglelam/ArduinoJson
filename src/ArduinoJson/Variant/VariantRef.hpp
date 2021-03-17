@@ -28,7 +28,7 @@ class ObjectRef;
 template <typename TData>
 class VariantRefBase : public VariantTag {
   template <typename T, typename Enable>
-  friend class Converter;
+  friend struct Converter;
 
  public:
   FORCE_INLINE bool isNull() const {
@@ -71,7 +71,7 @@ class VariantRef : public VariantRefBase<VariantData>,
   friend class VariantConstRef;
 
   template <typename T, typename Enable>
-  friend class Converter;
+  friend struct Converter;
 
  public:
   // Intenal use only
